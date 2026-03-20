@@ -343,9 +343,6 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
   padding-top: 10px;
 }
 
-/* ══ BOOKING FORM ══ */
-.booking-section { display: none; }
-
 .success-box {
   padding: 16px;
   background: rgba(74,158,114,0.08);
@@ -499,55 +496,12 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
         <div class="fare-eyebrow">Estimated Fare</div>
         <div class="fare-num" id="fare-num">—</div>
         <div class="fare-disclaimer">
-          This is an estimate only. Submitting a request does not guarantee availability or booking. Final price and trip approval must be confirmed by phone.
+          This is an estimate only. Final price will be confirmed by phone prior to dispatch. Rates may vary based on actual route and conditions.
         </div>
       </div>
     </div>
 
-    <!-- STEP 2: Booking Request -->
-    <div class="section booking-section" id="booking-section">
-      <div class="section-label">Request a Trip</div>
 
-      <div class="field">
-        <div class="field-label">Full Name</div>
-        <input type="text" id="b-name" placeholder="Your name..." />
-      </div>
-
-      <div class="field">
-        <div class="field-label">Callback Number</div>
-        <input type="tel" id="b-phone" placeholder="315-000-0000" />
-      </div>
-
-      <div class="field">
-        <div class="field-label">Pickup Date &amp; Time</div>
-        <input type="datetime-local" id="b-datetime" />
-      </div>
-
-      <div class="field">
-        <div class="field-label">Number of Passengers</div>
-        <select id="b-pax">
-          <option value="">Select...</option>
-          <option value="1">1</option>
-          <option value="2">2</option>
-          <option value="3">3</option>
-          <option value="4">4</option>
-        </select>
-      </div>
-
-      <div class="field">
-        <div class="field-label">Notes / Special Requests</div>
-        <textarea id="b-notes" placeholder="Luggage, accessibility needs, airport flight info..."></textarea>
-      </div>
-
-      <button class="btn-primary" id="submit-btn" onclick="submitBooking()" style="margin-top:4px;">Submit Request</button>
-      <div class="err" id="b-err"></div>
-
-      <div class="success-box" id="success-box">
-        <div class="success-icon">✓</div>
-        <div class="success-title">Request Received</div>
-        <div class="success-sub">Your request has been submitted and will be reviewed. Approval is not guaranteed — we'll call you back if we're able to accommodate your trip.<br><br>Questions? Call <strong>315-262-0444</strong></div>
-      </div>
-    </div>
 
     <!-- CALL CTA -->
     <div class="section">
@@ -559,11 +513,11 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
       <div class="section-label">Service Info</div>
       <div class="info-item">
         <span class="info-icon">◷</span>
-        <div><strong>Hours</strong>Daily 6 AM – 10 PM, 7 days a week.</div>
+        <div><strong>Hours</strong>Daily 6 AM – 10 PM, 7 days a week. Extended hours by agreement only and in advance of trip.</div>
       </div>
       <div class="info-item">
         <span class="info-icon">✈</span>
-        <div><strong>Airport Trips</strong>Reservations strongly recommended. Airports served: Massena, Ogdensburg, Plattsburgh, Saranac Lake, Syracuse, Watertown, Burlington VT, Albany.</div>
+        <div><strong>Airport Trips</strong>Reservations strongly recommended. Regional airports served: Massena, Ogdensburg, Plattsburgh, Saranac Lake, Syracuse, Watertown, Burlington VT, Albany.</div>
       </div>
       <div class="info-item">
         <span class="info-icon">◎</span>
@@ -571,11 +525,39 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
       </div>
       <div class="info-item">
         <span class="info-icon">◈</span>
-        <div><strong>Capacity</strong>Owner-operated. One vehicle. Max 4 passengers.</div>
+        <div><strong>Capacity</strong>Owner-operated. One vehicle, one driver. Max 4 passengers.</div>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">⏱</span>
+        <div><strong>Wait Time</strong>$1.00/minute ($60/hr).</div>
       </div>
       <div class="info-item">
         <span class="info-icon">☏</span>
-        <div><strong>Book by Phone</strong>315-262-0444</div>
+        <div><strong>Book by Phone or Text</strong>315-262-0444 — Rates will be agreed upon prior to dispatch.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="section-label">Rates &amp; Fares</div>
+      <div class="info-item">
+        <span class="info-icon">◑</span>
+        <div><strong>Per Party</strong>Rates shown are per party or family. Additional separate parties traveling at the same time are each charged full fare.</div>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">◑</span>
+        <div><strong>Multiple Parties</strong>The number of people identified at the time of the call determines the party. Each separate party pays full fare.</div>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">◑</span>
+        <div><strong>Payment</strong>Credit card, debit card, Apple Pay, Cash, Zelle, Venmo, PayPal, and other electronic payments accepted. Cash for local pickup only, or if agreed upon in advance. Payment collected in the car prior to departure for trips departing Potsdam or Canton. Payment collected in advance for airport pickups returning to Potsdam/Canton, or at driver's discretion.</div>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">◑</span>
+        <div><strong>Cancellation</strong>Rides may be canceled anytime before dispatch. Cancellation after dispatch results in full fare charge or distance-based charge at driver's discretion, applied to next fare by the same customer.</div>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">◑</span>
+        <div><strong>Lost &amp; Found</strong>Items left behind are the responsibility of their owners and will be returned at full fare.</div>
       </div>
     </div>
 
@@ -596,11 +578,10 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator {
 <script>
 // ── Config ──
 const PROXY      = 'https://taxizero-proxy.onrender.com';
-const W3F_KEY    = 'f81f62c0-4ee5-4141-b004-9409af35e6e0';
 const HOME       = '21 Elm St, Potsdam, NY 13676';
 const HOME_LL    = { lat: 44.6697, lng: -74.9814 };
-const RATE       = 1.00;
-const FLAT       = 5.00;
+const RATE       = 1.00;   // $60/hr = $1.00/min
+const MINIMUM    = 18;     // minimum fare regardless of distance
 const MAX_CALCS  = 5;
 
 let map, dirSvc, dirRender, mPick, mDrop, mHome;
@@ -766,7 +747,10 @@ async function calculateFare() {
 
     const totalSec = leg1.durSec + leg2.durSec + leg3.durSec;
     const totalMins = totalSec / 60;
-    const fare = Math.ceil(totalMins * RATE + FLAT);
+    // Add $5 only for short trips (base calc ≤ $30), skip it for longer trips
+    const baseCalc = totalMins * RATE;
+    const withFlat = baseCalc <= 30 ? baseCalc + 5 : baseCalc;
+    const fare = Math.max(MINIMUM, Math.ceil(withFlat));
 
     lastFare    = fare;
     lastPickup  = pv;
@@ -780,7 +764,6 @@ async function calculateFare() {
     document.getElementById('fare-num').innerHTML =
       `<span style="vertical-align:super;font-size:20px;opacity:0.6;font-family:Cormorant Garamond">$</span>${fare}`;
     document.getElementById('result-section').style.display = 'block';
-    document.getElementById('booking-section').style.display = 'block';
 
     // Map markers
     mPick = mkMarker(pLL, '#5a8ab8', 'P', mPick);
@@ -821,73 +804,9 @@ async function calculateFare() {
   }
 }
 
-// ── Submit Booking via Web3Forms ──
-async function submitBooking() {
-  const name     = document.getElementById('b-name').value.trim();
-  const phone    = document.getElementById('b-phone').value.trim();
-  const datetime = document.getElementById('b-datetime').value;
-  const pax      = document.getElementById('b-pax').value;
-  const notes    = document.getElementById('b-notes').value.trim();
-  const btn      = document.getElementById('submit-btn');
-
-  clearErr('b-err');
-
-  if (!name)     { showErr('b-err', 'Name is required.'); return; }
-  if (!phone)    { showErr('b-err', 'Callback number is required.'); return; }
-  if (!datetime) { showErr('b-err', 'Pickup date and time is required.'); return; }
-  if (!pax)      { showErr('b-err', 'Select number of passengers.'); return; }
-
-  btn.disabled = true;
-  btn.textContent = 'Sending…';
-
-  // Format datetime nicely
-  const dt = new Date(datetime);
-  const dtStr = dt.toLocaleString('en-US', {
-    weekday:'long', month:'long', day:'numeric',
-    year:'numeric', hour:'2-digit', minute:'2-digit'
-  });
-
-  const formData = {
-    access_key: W3F_KEY,
-    subject: `Taxi Zero Trip Request — ${name}`,
-    from_name: 'Taxi Zero Estimator',
-    name,
-    phone,
-    pickup_address: lastPickup  || document.getElementById('pickup').value,
-    dropoff_address: lastDropoff || document.getElementById('dropoff').value,
-    pickup_datetime: dtStr,
-    passengers: pax,
-    estimated_fare: lastFare ? `$${lastFare}` : 'Not calculated',
-    notes: notes || 'None',
-  };
-
-  try {
-    const res = await fetch('https://api.web3forms.com/submit', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(formData),
-    });
-    const data = await res.json();
-    if (data.success) {
-      document.getElementById('submit-btn').style.display = 'none';
-      document.getElementById('success-box').style.display = 'block';
-      // Clear form
-      ['b-name','b-phone','b-datetime','b-notes'].forEach(id => document.getElementById(id).value = '');
-      document.getElementById('b-pax').value = '';
-    } else {
-      showErr('b-err', 'Submission failed. Please call to inquire: 315-262-0444');
-      btn.disabled = false;
-      btn.textContent = 'Send Booking Request';
-    }
-  } catch(e) {
-    showErr('b-err', 'Network error. Please call to inquire: 315-262-0444');
-    btn.disabled = false;
-    btn.textContent = 'Send Booking Request';
-  }
-}
 </script>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyC3K0mI0jtkoX3vHKGig7bgRbgIEvFNBvg&libraries=places&callback=initMap"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDW-ShqmHJwLVc0SY_GX3mnCe5ILKghhOo&libraries=places&callback=initMap"></script>
 
 </body>
 </html>
