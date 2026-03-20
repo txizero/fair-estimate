@@ -581,7 +581,7 @@ const PROXY      = 'https://taxizero-proxy.onrender.com';
 const HOME       = '21 Elm St, Potsdam, NY 13676';
 const HOME_LL    = { lat: 44.6697, lng: -74.9814 };
 const RATE       = 1.00;   // $60/hr = $1.00/min
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx_uaW-2A13fXHLoBqaKBtrZEHle2gwBvip33lnAzC_FwuA9SALVXF8DZKaRBPZIFSIMQ/exec';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbwiK6WvK_dqvjDEbajD8PmBuMdFe13lUGhzDCNHbAxug6yvotI5sa2ZE9lybwwZKa4w8g/exec';
 const MINIMUM    = 18;     // minimum fare regardless of distance
 const MAX_CALCS  = 5;
 
@@ -772,7 +772,7 @@ async function calculateFare() {
       `Home → Pickup: ${leg1Mins} min (${leg1.distTxt})`,
       `Pickup → Dropoff: ${leg2Mins} min (${leg2.distTxt})`,
       `Dropoff → Home: ${leg3Mins} min (${leg3.distTxt})`,
-      `Total: ${roundTripMins} min × $1.00/min = $${Math.ceil(baseCalc)}${flatNote}${floorNote}`,
+      `Total Distance: ${totalMilesRounded} mi | Total Time: ${roundTripMins} min × $1.00/min = $${Math.ceil(baseCalc)}${flatNote}${floorNote}`,
       `Final Fare: $${fare}`,
     ].join(' | ');
 
@@ -780,9 +780,12 @@ async function calculateFare() {
     lastPickup  = pv;
     lastDropoff = dv;
 
-    // Category tag based on trip length
+    // Category tag — long haul if one-way trip (pickup→dropoff) exceeds 55 miles
+    const totalMiles = ((leg1.distM + leg2.distM + leg3.distM) / 1609.34);
+    const totalMilesRounded = Math.round(totalMiles * 10) / 10;
+    const oneWayMiles = leg3.distM / 1609.34; // dropoff → home = home → dropoff distance
     let category = 'Local';
-    if (roundTripMins > 60) category = 'Long Haul';
+    if (oneWayMiles > 55) category = 'Long Haul';
     else if (roundTripMins > 25) category = 'Regional';
 
     // Full route string
@@ -809,6 +812,7 @@ async function calculateFare() {
         leg1mins:    leg1Mins,
         leg2mins:    leg2Mins,
         leg3mins:    leg3Mins,
+        totalmiles:  totalMilesRounded,
       }),
     }).catch(() => {}); // silent fail — never block the user
 
