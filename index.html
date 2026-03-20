@@ -581,6 +581,7 @@ const PROXY      = 'https://taxizero-proxy.onrender.com';
 const HOME       = '21 Elm St, Potsdam, NY 13676';
 const HOME_LL    = { lat: 44.6697, lng: -74.9814 };
 const RATE       = 1.00;   // $60/hr = $1.00/min
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzhPFAu6aprbwNjn1W0VbjO1416Q6uV95MYfOO_-6kvnxqpAWihXCEaKPvRti2Ps0hTBQ/exec';
 const MINIMUM    = 18;     // minimum fare regardless of distance
 const MAX_CALCS  = 5;
 
@@ -747,14 +748,45 @@ async function calculateFare() {
 
     const totalSec = leg1.durSec + leg2.durSec + leg3.durSec;
     const totalMins = totalSec / 60;
+    const roundTripMins = Math.round(totalMins);
+
     // Add $5 only for short trips (base calc ≤ $30), skip it for longer trips
     const baseCalc = totalMins * RATE;
-    const withFlat = baseCalc <= 30 ? baseCalc + 5 : baseCalc;
-    const fare = Math.max(MINIMUM, Math.ceil(withFlat));
+    const hasFlat  = baseCalc <= 30;
+    const withFlat = hasFlat ? baseCalc + 5 : baseCalc;
+
+    // Floor overrides: $18 minimum always, $25 if Walmart involved
+    const isWalmart = pv.toLowerCase().includes('walmart') || dv.toLowerCase().includes('walmart');
+    const floor = isWalmart ? 25 : MINIMUM;
+    const fare  = Math.max(floor, Math.ceil(withFlat));
+
+    // Compact calculation string for Sheets log
+    const calcNote = hasFlat
+      ? `${roundTripMins} min × $1.00 + $5.00 flat = $${Math.ceil(withFlat)} (floor $${floor})`
+      : `${roundTripMins} min × $1.00 = $${Math.ceil(baseCalc)} (floor $${floor})`;
 
     lastFare    = fare;
     lastPickup  = pv;
     lastDropoff = dv;
+
+    // Log to Google Sheets (fire and forget — don't block UI)
+    const now = new Date().toLocaleString('en-US', {
+      month:'2-digit', day:'2-digit', year:'numeric',
+      hour:'2-digit', minute:'2-digit', second:'2-digit'
+    });
+    fetch(SHEETS_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        timestamp:   now,
+        pickup:      pv,
+        dropoff:     dv,
+        estimate:    '$' + fare,
+        calculation: calcNote,
+        minutes:     roundTripMins,
+      }),
+    }).catch(() => {}); // silent fail — never block the user
 
     // Update counter
     calcCount++;
