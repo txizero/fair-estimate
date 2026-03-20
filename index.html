@@ -581,7 +581,7 @@ const PROXY      = 'https://taxizero-proxy.onrender.com';
 const HOME       = '21 Elm St, Potsdam, NY 13676';
 const HOME_LL    = { lat: 44.6697, lng: -74.9814 };
 const RATE       = 1.00;   // $60/hr = $1.00/min
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzhPFAu6aprbwNjn1W0VbjO1416Q6uV95MYfOO_-6kvnxqpAWihXCEaKPvRti2Ps0hTBQ/exec';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbyjLKYdUM81FOo9vFkMnrl1qfi49VkvGYshk873lqRu02Z-VNq6dxTt5Ny-ZI53z65Bog/exec';
 const MINIMUM    = 18;     // minimum fare regardless of distance
 const MAX_CALCS  = 5;
 
@@ -769,6 +769,14 @@ async function calculateFare() {
     lastPickup  = pv;
     lastDropoff = dv;
 
+    // Category tag based on trip length
+    let category = 'Local';
+    if (roundTripMins > 60) category = 'Long Haul';
+    else if (roundTripMins > 25) category = 'Regional';
+
+    // Full route string
+    const routeStr = `21 Elm St → ${pv} → ${dv} → 21 Elm St`;
+
     // Log to Google Sheets (fire and forget — don't block UI)
     const now = new Date().toLocaleString('en-US', {
       month:'2-digit', day:'2-digit', year:'numeric',
@@ -782,9 +790,11 @@ async function calculateFare() {
         timestamp:   now,
         pickup:      pv,
         dropoff:     dv,
+        route:       routeStr,
         estimate:    '$' + fare,
         calculation: calcNote,
         minutes:     roundTripMins,
+        category:    category,
       }),
     }).catch(() => {}); // silent fail — never block the user
 
