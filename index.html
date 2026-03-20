@@ -581,7 +581,7 @@ const PROXY      = 'https://taxizero-proxy.onrender.com';
 const HOME       = '21 Elm St, Potsdam, NY 13676';
 const HOME_LL    = { lat: 44.6697, lng: -74.9814 };
 const RATE       = 1.00;   // $60/hr = $1.00/min
-const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbzlsIB1aLfyvik0OvkY-4uwNJ5_xoH42DbIyjuVqNf-jValarrPyUUSS_4_Gn01VJtlVQ/exec';
+const SHEETS_URL = 'https://script.google.com/macros/s/AKfycbx_uaW-2A13fXHLoBqaKBtrZEHle2gwBvip33lnAzC_FwuA9SALVXF8DZKaRBPZIFSIMQ/exec';
 const MINIMUM    = 18;     // minimum fare regardless of distance
 const MAX_CALCS  = 5;
 
@@ -760,10 +760,21 @@ async function calculateFare() {
     const floor = isWalmart ? 25 : MINIMUM;
     const fare  = Math.max(floor, Math.ceil(withFlat));
 
-    // Compact calculation string for Sheets log
-    const calcNote = hasFlat
-      ? `${roundTripMins} min × $1.00 + $5.00 flat = $${Math.ceil(withFlat)} (floor $${floor})`
-      : `${roundTripMins} min × $1.00 = $${Math.ceil(baseCalc)} (floor $${floor})`;
+    // Individual leg times in minutes
+    const leg1Mins = Math.round(leg1.durSec / 60);
+    const leg2Mins = Math.round(leg2.durSec / 60);
+    const leg3Mins = Math.round(leg3.durSec / 60);
+
+    // Long-form calculation breakdown
+    const flatNote = hasFlat ? ` + $5.00 flat fee` : '';
+    const floorNote = fare > Math.ceil(withFlat) ? ` | Floor applied: $${floor} minimum` : '';
+    const calcNote = [
+      `Home → Pickup: ${leg1Mins} min (${leg1.distTxt})`,
+      `Pickup → Dropoff: ${leg2Mins} min (${leg2.distTxt})`,
+      `Dropoff → Home: ${leg3Mins} min (${leg3.distTxt})`,
+      `Total: ${roundTripMins} min × $1.00/min = $${Math.ceil(baseCalc)}${flatNote}${floorNote}`,
+      `Final Fare: $${fare}`,
+    ].join(' | ');
 
     lastFare    = fare;
     lastPickup  = pv;
@@ -791,10 +802,13 @@ async function calculateFare() {
         pickup:      pv,
         dropoff:     dv,
         route:       routeStr,
-        estimate:    '$' + fare,
+        estimate:    fare,
         calculation: calcNote,
         minutes:     roundTripMins,
         category:    category,
+        leg1mins:    leg1Mins,
+        leg2mins:    leg2Mins,
+        leg3mins:    leg3Mins,
       }),
     }).catch(() => {}); // silent fail — never block the user
 
