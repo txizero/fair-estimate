@@ -610,6 +610,9 @@ let lastFare   = null;
 let lastPickup = '';
 let lastDropoff= '';
 
+// ── Wake proxy on load (prevents cold-start delay) ──
+fetch(PROXY + '/').catch(() => {});
+
 // ── Clock ──
 (function tick() {
   document.getElementById('clock').textContent =
