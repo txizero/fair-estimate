@@ -603,7 +603,7 @@ const RATE       = 1.00;
 const FLAT       = 5.00;
 const MAX_CALCS  = 5;
 
-let map, dirRender, mPick, mDrop, mHome;
+let map, dirSvc, dirRender, mPick, mDrop, mHome;
 let ready      = false;
 let calcCount  = 0;
 let lastFare   = null;
@@ -645,6 +645,7 @@ window.initMap = function() {
     ],
   });
 
+  dirSvc = new google.maps.DirectionsService();
   dirRender = new google.maps.DirectionsRenderer({
     map,
     suppressMarkers: true,
@@ -778,10 +779,19 @@ async function calculateFare() {
     document.getElementById('result-section').style.display = 'block';
     document.getElementById('booking-section').style.display = 'block';
 
-    // Map
+    // Map markers
     mPick = mkMarker(pLL, '#5a8ab8', 'P', mPick);
     mDrop = mkMarker(dLL, '#b86054', 'D', mDrop);
-    dirRender.setDirections(leg2.result);
+
+    // Draw route polyline using client-side DirectionsService (renderer requires native result)
+    dirSvc.route({
+      origin: pLL,
+      destination: dLL,
+      travelMode: google.maps.TravelMode.DRIVING,
+    }, (result, status) => {
+      if (status === 'OK') dirRender.setDirections(result);
+    });
+
     const bounds = new google.maps.LatLngBounds();
     [HOME_LL, pLL, dLL].forEach(p => bounds.extend(p));
     map.fitBounds(bounds, { top:50, right:50, bottom:60, left:50 });
@@ -874,7 +884,7 @@ async function submitBooking() {
 }
 </script>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDW-ShqmHJwLVc0SY_GX3mnCe5ILKghhOo&callback=initMap"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDW-ShqmHJwLVc0SY_GX3mnCe5ILKghhOo&libraries=places&callback=initMap"></script>
 
 </body>
 </html>
