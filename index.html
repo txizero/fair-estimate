@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taxi Zero</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:       #0e0f0e;
+  --ink2:      #161816;
+  --ink3:      #1e211e;
+  --ink4:      #2a2e2a;
+  --gold:      #b8965a;
+  --gold-lt:   #d4b07a;
+  --gold-glow: rgba(184,150,90,0.12);
+  --stone:     #8a9080;
+  --stone-lt:  #b0b8a8;
+  --cream:     #e8e4da;
+  --green:     #4a9e72;
+  --blue:      #5a8ab8;
+  --red:       #b86054;
+  --border:    rgba(255,255,255,0.06);
+  --border2:   rgba(255,255,255,0.04);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  background: var(--ink);
+  color: var(--stone-lt);
+  font-family: 'DM Mono', monospace;
+  font-weight: 300;
+  overflow: hidden;
+}
+
+/* ══ LAYOUT ══ */
+.shell {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  grid-template-rows: 56px 1fr;
+  height: 100vh;
+}
+
+/* ══ HEADER ══ */
+.topbar {
+  grid-column: 1 / -1;
+  background: var(--ink2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+}
+
+.brand {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.brand-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: 6px;
+  color: var(--cream);
+  text-transform: uppercase;
+}
+.brand-rule {
+  width: 1px;
+  height: 14px;
+  background: var(--border);
+}
+.brand-sub {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: var(--stone);
+}
+.live-dot {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green);
+  margin-right: 6px;
+  animation: breathe 2.4s ease-in-out infinite;
+}
+@keyframes breathe {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.4; transform: scale(0.8); }
+}
+#clock {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 16px;
+  font-weight: 300;
+  color: var(--cream);
+  letter-spacing: 2px;
+}
+
+/* ══ PANEL ══ */
+.panel {
+  background: var(--ink2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.panel::-webkit-scrollbar { width: 2px; }
+.panel::-webkit-scrollbar-thumb { background: var(--ink4); }
+
+.section {
+  padding: 24px 28px;
+  border-bottom: 1px solid var(--border2);
+}
+
+.section-label {
+  font-size: 8px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--gold-glow);
+}
+
+/* Home base */
+.home-display {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(74,158,114,0.06);
+  border: 1px solid rgba(74,158,114,0.15);
+  border-radius: 2px;
+}
+.home-icon-wrap {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: rgba(74,158,114,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.home-addr {
+  font-size: 11px;
+  color: var(--stone-lt);
+  line-height: 1.5;
+}
+.home-addr strong {
+  display: block;
+  font-size: 10px;
+  color: var(--green);
+  font-weight: 400;
+  letter-spacing: 1px;
+  margin-bottom: 1px;
+}
+
+/* Stops */
+.stops-wrap {
+  position: relative;
+  padding-left: 20px;
+}
+.stops-spine {
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: linear-gradient(to bottom, var(--blue), var(--red));
+  opacity: 0.4;
+}
+
+.stop {
+  margin-bottom: 18px;
+  position: relative;
+}
+.stop:last-child { margin-bottom: 0; }
+
+.stop-node {
+  position: absolute;
+  left: -20px;
+  top: 30px;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid;
+  background: var(--ink2);
+  transform: translateX(-50%);
+}
+.stop-node.pickup  { border-color: var(--blue);  }
+.stop-node.dropoff { border-color: var(--red); }
+
+.stop-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.stop-label-text {
+  font-size: 8px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+}
+.stop-label-text.pickup  { color: var(--blue); }
+.stop-label-text.dropoff { color: var(--red); }
+
+.input-wrap { position: relative; }
+
+input[type="text"] {
+  width: 100%;
+  background: var(--ink3);
+  border: 1px solid var(--border);
+  color: var(--cream);
+  font-family: 'DM Mono', monospace;
+  font-weight: 300;
+  font-size: 12px;
+  padding: 10px 12px;
+  border-radius: 2px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  letter-spacing: 0.3px;
+}
+input[type="text"]:focus {
+  border-color: var(--gold);
+  background: rgba(184,150,90,0.04);
+}
+input[type="text"]::placeholder { color: var(--ink4); }
+
+.suggestions {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0; right: 0;
+  background: var(--ink3);
+  border: 1px solid var(--border);
+  z-index: 200;
+  display: none;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.5);
+}
+.suggestions.open { display: block; }
+.sug-item {
+  padding: 9px 12px;
+  font-size: 11px;
+  color: var(--stone-lt);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border2);
+  transition: background 0.1s;
+  line-height: 1.4;
+}
+.sug-item:hover { background: var(--ink4); color: var(--cream); }
+.sug-item:last-child { border-bottom: none; }
+
+/* CTA */
+.cta-btn {
+  width: 100%;
+  padding: 13px;
+  background: var(--gold);
+  color: var(--ink);
+  border: none;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.2s, opacity 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+.cta-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0);
+  transition: background 0.2s;
+}
+.cta-btn:hover:not(:disabled)::after { background: rgba(255,255,255,0.08); }
+.cta-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.err {
+  margin-top: 10px;
+  padding: 10px 12px;
+  background: rgba(184,96,84,0.08);
+  border: 1px solid rgba(184,96,84,0.25);
+  border-radius: 2px;
+  font-size: 11px;
+  color: var(--red);
+  display: none;
+  line-height: 1.5;
+}
+
+/* ══ RESULTS ══ */
+.results { display: none; }
+
+.leg-table { width: 100%; border-collapse: collapse; }
+.leg-table td {
+  padding: 7px 0;
+  font-size: 11px;
+  border-bottom: 1px solid var(--border2);
+  vertical-align: middle;
+}
+.leg-table tr:last-child td { border-bottom: none; }
+.leg-table .lk { color: var(--stone); width: 50%; }
+.leg-table .lv { color: var(--stone-lt); text-align: right; }
+.leg-table .lv.em { color: var(--cream); }
+
+.divider {
+  height: 1px;
+  background: linear-gradient(to right, transparent, var(--gold), transparent);
+  opacity: 0.3;
+  margin: 4px 0;
+}
+
+.fare-card {
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--ink3);
+  border: 1px solid rgba(184,150,90,0.2);
+  border-radius: 2px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.fare-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(184,150,90,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.fare-eyebrow {
+  font-size: 8px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.fare-num {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 300;
+  font-size: 52px;
+  color: var(--cream);
+  line-height: 1;
+  letter-spacing: -1px;
+}
+.fare-cents {
+  font-size: 24px;
+  vertical-align: super;
+  opacity: 0.7;
+}
+.fare-formula {
+  margin-top: 8px;
+  font-size: 9px;
+  color: var(--stone);
+  letter-spacing: 1px;
+}
+
+.source-line {
+  margin-top: 14px;
+  font-size: 9px;
+  color: var(--ink4);
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+/* ══ MAP ══ */
+.map-col {
+  position: relative;
+  overflow: hidden;
+  background: var(--ink);
+}
+
+#gmap { width: 100%; height: 100%; }
+
+.map-veil {
+  position: absolute;
+  inset: 0;
+  background: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+  z-index: 10;
+}
+.map-veil.gone { opacity: 0; }
+
+.veil-ring {
+  width: 36px; height: 36px;
+  border: 1px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 1.2s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.veil-text {
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: var(--stone);
+  text-transform: uppercase;
+}
+
+.map-stamp {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(14,15,14,0.8);
+  border: 1px solid var(--border);
+  padding: 6px 16px;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: var(--stone);
+  text-transform: uppercase;
+  backdrop-filter: blur(6px);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ══ INFO SECTION ══ */
+.info-block {
+  padding: 20px 28px;
+  border-bottom: 1px solid var(--border2);
+}
+.info-block:last-child { border-bottom: none; }
+
+.info-item {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 13px;
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--stone);
+}
+.info-item:last-child { margin-bottom: 0; }
+.info-icon {
+  color: var(--gold);
+  flex-shrink: 0;
+  margin-top: 1px;
+  font-size: 12px;
+  width: 16px;
+  text-align: center;
+}
+.info-item strong {
+  display: block;
+  color: var(--stone-lt);
+  font-weight: 400;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+
+.fare-disclaimer {
+  font-size: 10px;
+  color: var(--stone);
+  margin-top: 10px;
+  line-height: 1.6;
+  letter-spacing: 0.3px;
+  border-top: 1px solid var(--border2);
+  padding-top: 10px;
+}
+
+.call-btn {
+  display: block;
+  margin-top: 14px;
+  padding: 12px;
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-decoration: none;
+  text-align: center;
+  border-radius: 2px;
+  transition: background 0.2s, color 0.2s;
+}
+.call-btn:hover {
+  background: var(--gold);
+  color: var(--ink);
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-name">Taxi Zero</div>
+      <div class="brand-rule"></div>
+      <div class="brand-sub">Fare Estimator</div>
+    </div>
+    <div class="topbar-right">
+      <div><span class="live-dot"></span><span style="color:var(--stone-lt)">Live Estimates</span></div>
+      <div id="clock"></div>
+    </div>
+  </header>
+
+  <!-- PANEL -->
+  <aside class="panel">
+
+    <div class="section">
+      <div class="section-label">Get a Quote</div>
+      <div class="stops-wrap">
+        <div class="stops-spine"></div>
+
+        <div class="stop">
+          <div class="stop-node pickup"></div>
+          <div class="stop-label-row">
+            <span class="stop-label-text pickup">Pickup</span>
+          </div>
+          <div class="input-wrap">
+            <input type="text" id="pickup" placeholder="Address or intersection..." autocomplete="off" />
+            <div class="suggestions" id="pickup-sug"></div>
+          </div>
+        </div>
+
+        <div class="stop">
+          <div class="stop-node dropoff"></div>
+          <div class="stop-label-row">
+            <span class="stop-label-text dropoff">Dropoff</span>
+          </div>
+          <div class="input-wrap">
+            <input type="text" id="dropoff" placeholder="Address or intersection..." autocomplete="off" />
+            <div class="suggestions" id="dropoff-sug"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section">
+      <button class="cta-btn" id="cta" onclick="calculateFare()">Calculate Fare</button>
+      <div class="err" id="err"></div>
+    </div>
+
+    <div class="section results" id="results">
+      <div class="section-label">Estimate</div>
+
+      <div class="fare-card">
+        <div class="fare-eyebrow">Estimated Fare</div>
+        <div class="fare-num" id="fare-num">—</div>
+        <div class="fare-disclaimer">
+          This is an estimate only. Final price and booking must be confirmed by phone.
+        </div>
+      </div>
+
+      <a href="tel:3152620444" class="call-btn">Call to Book &nbsp; 315-262-0444</a>
+    </div>
+
+
+    <div class="info-block">
+      <div class="section-label">Service Info</div>
+      <div class="info-item">
+        <span class="info-icon">◷</span>
+        <div><strong>Hours</strong>Daily 6 AM – 10 PM, 7 days a week.</div>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">✈</span>
+        <div><strong>Airport Trips</strong>Reservations strongly recommended. Regional airports served: Massena, Ogdensburg, Plattsburgh, Saranac Lake, Syracuse, Watertown, Burlington VT, and Albany.</div>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">◎</span>
+        <div><strong>Local Trips</strong>Subject to availability. Cannot be reserved in advance.</div>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">◈</span>
+        <div><strong>Capacity</strong>Owner-operated. One vehicle, one driver. Max 4 passengers.</div>
+      </div>
+      <div class="info-item">
+        <span class="info-icon">☏</span>
+        <div><strong>Book by Phone</strong>315-262-0444</div>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- MAP -->
+  <div class="map-col">
+    <div class="map-veil" id="veil">
+      <div class="veil-ring"></div>
+      <div class="veil-text">Initialising Map</div>
+    </div>
+    <div id="gmap"></div>
+    <div class="map-stamp">St. Lawrence County · Taxi Zero Dispatch</div>
+  </div>
+
+</div>
+
+<script>
+// ── Config ──
+const GKEY      = 'AIzaSyDW-ShqmHJwLVc0SY_GX3mnCe5ILKghhOo';
+const HOME      = '21 Elm St, Potsdam, NY 13676';
+const RATE      = 1.00;   // $60/hr = $1/min
+const FLAT      = 5.00;
+const HOME_LL   = { lat: 44.6697, lng: -74.9814 };
+
+let map, dirSvc, dirRender, geocoder, acSvc;
+let mPick, mDrop, mHome;
+let ready = false;
+
+// ── Clock ──
+(function tick() {
+  const n = new Date();
+  document.getElementById('clock').textContent =
+    n.toLocaleTimeString('en-US',{ hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  setTimeout(tick, 1000);
+})();
+
+// ── Map Init ──
+window.initMap = function() {
+  map = new google.maps.Map(document.getElementById('gmap'), {
+    center: HOME_LL,
+    zoom: 10,
+    mapTypeId: 'roadmap',
+    disableDefaultUI: true,
+    zoomControl: true,
+    gestureHandling: 'cooperative',
+    styles: [
+      { elementType:'geometry',           stylers:[{color:'#111412'}] },
+      { elementType:'labels.text.stroke', stylers:[{color:'#111412'}] },
+      { elementType:'labels.text.fill',   stylers:[{color:'#3a4a3a'}] },
+      { featureType:'administrative.country',    elementType:'geometry.stroke', stylers:[{color:'#2a3a2a'}] },
+      { featureType:'administrative.province',   elementType:'geometry.stroke', stylers:[{color:'#222e22'}] },
+      { featureType:'administrative.locality',   elementType:'labels.text.fill', stylers:[{color:'#6a8060'}] },
+      { featureType:'landscape',          elementType:'geometry', stylers:[{color:'#131714'}] },
+      { featureType:'landscape.natural.landcover', elementType:'geometry', stylers:[{color:'#0f1410'}] },
+      { featureType:'poi',                stylers:[{visibility:'off'}] },
+      { featureType:'road',               elementType:'geometry',        stylers:[{color:'#1e2820'}] },
+      { featureType:'road',               elementType:'geometry.stroke', stylers:[{color:'#111812'}] },
+      { featureType:'road',               elementType:'labels.text.fill',stylers:[{color:'#4a6050'}] },
+      { featureType:'road.highway',       elementType:'geometry',        stylers:[{color:'#253020'}] },
+      { featureType:'road.highway',       elementType:'geometry.stroke', stylers:[{color:'#182018'}] },
+      { featureType:'road.highway',       elementType:'labels.text.fill',stylers:[{color:'#b8965a'}] },
+      { featureType:'road.arterial',      elementType:'labels',          stylers:[{visibility:'off'}] },
+      { featureType:'road.local',         elementType:'labels',          stylers:[{visibility:'off'}] },
+      { featureType:'transit',            stylers:[{visibility:'off'}] },
+      { featureType:'water',              elementType:'geometry',        stylers:[{color:'#0a1520'}] },
+      { featureType:'water',              elementType:'labels.text.fill',stylers:[{color:'#1a3040'}] },
+    ],
+  });
+
+  dirSvc    = new google.maps.DirectionsService();
+  dirRender = new google.maps.DirectionsRenderer({
+    map,
+    suppressMarkers: true,
+    polylineOptions: {
+      strokeColor: '#b8965a',
+      strokeWeight: 2.5,
+      strokeOpacity: 0.7,
+    },
+  });
+  geocoder = new google.maps.Geocoder();
+  acSvc    = new google.maps.places.AutocompleteService();
+
+  // Home marker
+  mHome = new google.maps.Marker({
+    position: HOME_LL,
+    map,
+    zIndex: 5,
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 7,
+      fillColor: '#4a9e72',
+      fillOpacity: 1,
+      strokeColor: '#111412',
+      strokeWeight: 2,
+    },
+  });
+
+  ready = true;
+  document.getElementById('veil').classList.add('gone');
+};
+
+// ── Autocomplete ──
+function attachAC(inputId, sugId) {
+  const inp = document.getElementById(inputId);
+  const sug = document.getElementById(sugId);
+
+  inp.addEventListener('input', () => {
+    const v = inp.value;
+    if (!v || v.length < 3 || !ready) { sug.classList.remove('open'); return; }
+    acSvc.getPlacePredictions({
+      input: v,
+      componentRestrictions: { country: 'us' },
+      location: new google.maps.LatLng(44.670, -74.981),
+      radius: 100000,
+    }, (preds, status) => {
+      if (status !== google.maps.places.PlacesServiceStatus.OK || !preds) {
+        sug.classList.remove('open'); return;
+      }
+      sug.innerHTML = '';
+      preds.slice(0, 5).forEach(p => {
+        const d = document.createElement('div');
+        d.className = 'sug-item';
+        d.textContent = p.description;
+        d.addEventListener('mousedown', e => {
+          e.preventDefault();
+          inp.value = p.description;
+          sug.classList.remove('open');
+        });
+        sug.appendChild(d);
+      });
+      sug.classList.add('open');
+    });
+  });
+
+  inp.addEventListener('blur', () => setTimeout(() => sug.classList.remove('open'), 150));
+}
+attachAC('pickup',  'pickup-sug');
+attachAC('dropoff', 'dropoff-sug');
+
+// ── Helpers ──
+function geocodeAddr(addr) {
+  return new Promise((res, rej) => {
+    geocoder.geocode({ address: addr }, (r, s) => {
+      if (s === 'OK') res(r[0].geometry.location);
+      else rej('Geocode failed: ' + addr);
+    });
+  });
+}
+
+function routeLeg(origin, dest) {
+  return new Promise((res, rej) => {
+    dirSvc.route({
+      origin, destination: dest,
+      travelMode: google.maps.TravelMode.DRIVING,
+    }, (result, status) => {
+      if (status === 'OK') {
+        const leg = result.routes[0].legs[0];
+        res({ result, durSec: leg.duration.value, durTxt: leg.duration.text,
+              distM: leg.distance.value, distTxt: leg.distance.text });
+      } else rej('Route failed: ' + status);
+    });
+  });
+}
+
+function mkMarker(pos, color, label, existing) {
+  if (existing) existing.setMap(null);
+  return new google.maps.Marker({
+    position: pos, map, zIndex: 20,
+    label: { text: label, color: '#0e0f0e', fontFamily: 'Cormorant Garamond', fontWeight: '600', fontSize: '10px' },
+    icon: {
+      path: google.maps.SymbolPath.CIRCLE,
+      scale: 12,
+      fillColor: color,
+      fillOpacity: 1,
+      strokeColor: '#0e0f0e',
+      strokeWeight: 2,
+    },
+  });
+}
+
+function fmtTime(sec) {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  return h > 0 ? `${h}h ${m}m` : `${m} min`;
+}
+
+function showErr(msg) {
+  const e = document.getElementById('err');
+  e.textContent = msg; e.style.display = 'block';
+}
+
+// ── Main ──
+async function calculateFare() {
+  const pv = document.getElementById('pickup').value.trim();
+  const dv = document.getElementById('dropoff').value.trim();
+  const btn = document.getElementById('cta');
+  const err = document.getElementById('err');
+
+  err.style.display = 'none';
+  document.getElementById('results').style.display = 'none';
+
+  if (!pv || !dv) { showErr('Both pickup and dropoff are required.'); return; }
+  if (!ready)      { showErr('Map is still loading. Try again in a moment.'); return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Calculating…';
+
+  try {
+    const [pLL, dLL] = await Promise.all([geocodeAddr(pv), geocodeAddr(dv)]);
+
+    const [leg1, leg2, leg3] = await Promise.all([
+      routeLeg(HOME, pLL),
+      routeLeg(pLL, dLL),
+      routeLeg(dLL, HOME),
+    ]);
+
+    const totalSec  = leg1.durSec + leg2.durSec + leg3.durSec;
+    const totalDistM = leg1.distM + leg2.distM + leg3.distM;
+    const totalMins = totalSec / 60;
+    const totalMi   = (totalDistM / 1609.34).toFixed(1);
+    const fare      = totalMins * RATE + FLAT;
+
+    // Round up to nearest dollar
+    const fareRounded = Math.ceil(fare);
+    document.getElementById('fare-num').innerHTML =
+      `<span style="vertical-align:super;font-size:22px;opacity:0.6;font-family:Cormorant Garamond">$</span>${fareRounded}`;
+
+    document.getElementById('results').style.display = 'block';
+
+    // Markers
+    mPick = mkMarker(pLL, '#5a8ab8', 'P', mPick);
+    mDrop = mkMarker(dLL, '#b86054', 'D', mDrop);
+
+    // Draw pickup→dropoff leg on map
+    dirRender.setDirections(leg2.result);
+
+    // Fit all three points
+    const bounds = new google.maps.LatLngBounds();
+    [HOME_LL, pLL, dLL].forEach(p => bounds.extend(p));
+    map.fitBounds(bounds, { top: 50, right: 50, bottom: 60, left: 50 });
+
+  } catch(e) {
+    console.error(e);
+    showErr('Route could not be calculated. Check the addresses and try again.');
+  }
+
+  btn.textContent = 'Calculate Fare';
+  btn.disabled = false;
+}
+</script>
+
+<!-- Load Maps synchronously so initMap is guaranteed available -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDW-ShqmHJwLVc0SY_GX3mnCe5ILKghhOo&libraries=places&callback=initMap"></script>
+
+</body>
+</html>
